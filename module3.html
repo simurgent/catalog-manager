@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog Manager - Actor Catalog</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f5f7;
+        }
+
+        .topbar {
+            background: #2ca01c;
+            padding: 14px 22px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2933;
+            margin-bottom: 16px;
+        }
+
+        .actor-card {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .actor-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .delete-btn {
+            background: #c53030;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #9b2c2c;
+        }
+
+        .form-group {
+            margin-top: 24px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #2d3748;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd2e1;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #2ca01c;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background: #248616;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">Actor Catalog</div>
+
+    <div class="container">
+        <div class="section-title">Actors</div>
+
+        <div id="actorList"></div>
+
+        <div class="form-group">
+            <div class="form-label">Add New Actor</div>
+            <input id="actorName" class="form-input" type="text" placeholder="Actor name" />
+            <button class="btn-primary" onclick="addActor()">Add Actor</button>
+        </div>
+    </div>
+
+    <script>
+        async function loadActors() {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                window.location.href = "module1.html";
+                return;
+            }
+
+            const res = await fetch("/api/actors", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "module1.html";
+                return;
+            }
+
+            const list = document.getElementById("actorList");
+            list.innerHTML = "";
+
+            data.actors.forEach(actor => {
+                const card = document.createElement("div");
+                card.className = "actor-card";
+
+                card.innerHTML = `
+                    <div class="actor-name">${actor.name}</div>
+                    <div class="delete-btn" onclick="deleteActor('${actor.id}')">Delete</div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        async function addActor() {
+            const name = document.getElementById("actorName").value.trim();
+            if (!name) {
+                alert("Enter a name.");
+                return;
+            }
+
+            const token = sessionStorage.getItem("token");
+
+            const res = await fetch("/api/actors", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({ name })
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Error adding actor.");
+                return;
+            }
+
+            document.getElementById("actorName").value = "";
+            loadActors();
+        }
+
+        async function deleteActor(id) {
+            const token = sessionStorage.getItem("token");
+
+            const res = await fetch(`/api/actors/${id}`, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Error deleting actor.");
+                return;
+            }
+
+            loadActors();
+        }
+
+        loadActors();
+    </script>
+</body>
+</html>

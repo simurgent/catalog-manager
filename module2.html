@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog Manager - Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f5f7;
+        }
+
+        .topbar {
+            background: #2ca01c;
+            padding: 14px 22px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2933;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2ca01c;
+        }
+
+        .nav-row {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            padding: 12px 16px;
+            background: #2ca01c;
+            color: #ffffff;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: #248616;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">Catalog Manager Dashboard</div>
+
+    <div class="container">
+        <div class="section-title">Overview</div>
+
+        <div class="card">
+            <div class="card-title">Total Actors</div>
+            <div id="actorCount" class="card-value">...</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Upcoming Events</div>
+            <div id="eventCount" class="card-value">...</div>
+        </div>
+
+        <div class="nav-row">
+            <a class="nav-btn" href="module3.html">Actor Catalog</a>
+            <a class="nav-btn" href="module4.html">Create Event</a>
+            <a class="nav-btn" href="module5.html">Reports</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                window.location.href = "module1.html";
+                return;
+            }
+
+            const res = await fetch("/api/dashboard", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "module1.html";
+                return;
+            }
+
+            document.getElementById("actorCount").textContent = data.actorCount;
+            document.getElementById("eventCount").textContent = data.eventCount;
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

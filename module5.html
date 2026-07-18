@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog Manager - Reports</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f5f7;
+        }
+
+        .topbar {
+            background: #2ca01c;
+            padding: 14px 22px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2933;
+            margin-bottom: 16px;
+        }
+
+        .report-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .report-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .report-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2ca01c;
+        }
+
+        .report-sub {
+            font-size: 14px;
+            color: #4a5568;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">Reports</div>
+
+    <div class="container">
+        <div class="section-title">Summary Metrics</div>
+
+        <div class="report-card">
+            <div class="report-title">Total Actors</div>
+            <div id="totalActors" class="report-value">...</div>
+            <div id="actorNote" class="report-sub"></div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-title">Total Events</div>
+            <div id="totalEvents" class="report-value">...</div>
+            <div id="eventNote" class="report-sub"></div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-title">Average Actors Per Event</div>
+            <div id="avgActors" class="report-value">...</div>
+            <div id="avgNote" class="report-sub"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadReports() {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                window.location.href = "module1.html";
+                return;
+            }
+
+            const res = await fetch("/api/reports", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "module1.html";
+                return;
+            }
+
+            document.getElementById("totalActors").textContent = data.totalActors;
+            document.getElementById("actorNote").textContent = data.actorNote;
+
+            document.getElementById("totalEvents").textContent = data.totalEvents;
+            document.getElementById("eventNote").textContent = data.eventNote;
+
+            document.getElementById("avgActors").textContent = data.avgActorsPerEvent;
+            document.getElementById("avgNote").textContent = data.avgNote;
+        }
+
+        loadReports();
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog Manager - Create Event</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f5f7;
+        }
+
+        .topbar {
+            background: #2ca01c;
+            padding: 14px 22px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2933;
+            margin-bottom: 16px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #2d3748;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd2e1;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #2ca01c;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background: #248616;
+        }
+
+        .event-list {
+            margin-top: 24px;
+        }
+
+        .event-card {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            margin-bottom: 14px;
+        }
+
+        .event-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .event-date {
+            font-size: 14px;
+            color: #4a5568;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">Create Event</div>
+
+    <div class="container">
+        <div class="section-title">New Event</div>
+
+        <div class="form-card">
+            <label class="form-label">Event Title</label>
+            <input id="eventTitle" class="form-input" type="text" placeholder="Event name">
+
+            <label class="form-label">Event Date</label>
+            <input id="eventDate" class="form-input" type="date">
+
+            <button class="btn-primary" onclick="createEvent()">Create Event</button>
+        </div>
+
+        <div class="section-title">Upcoming Events</div>
+        <div id="eventList" class="event-list"></div>
+    </div>
+
+    <script>
+        async function loadEvents() {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                window.location.href = "module1.html";
+                return;
+            }
+
+            const res = await fetch("/api/events", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "module1.html";
+                return;
+            }
+
+            const list = document.getElementById("eventList");
+            list.innerHTML = "";
+
+            data.events.forEach(ev => {
+                const card = document.createElement("div");
+                card.className = "event-card";
+
+                card.innerHTML = `
+                    <div class="event-title">${ev.title}</div>
+                    <div class="event-date">${ev.date}</div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        async function createEvent() {
+            const title = document.getElementById("eventTitle").value.trim();
+            const date = document.getElementById("eventDate").value;
+
+            if (!title || !date) {
+                alert("Enter both title and date.");
+                return;
+            }
+
+            const token = sessionStorage.getItem("token");
+
+            const res = await fetch("/api/events", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({ title, date })
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                alert("Error creating event.");
+                return;
+            }
+
+            document.getElementById("eventTitle").value = "";
+            document.getElementById("eventDate").value = "";
+
+            loadEvents();
+        }
+
+        loadEvents();
+    </script>
+</body>
+</html>

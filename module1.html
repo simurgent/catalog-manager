@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog Manager - Login</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f4f5f7;
+        }
+
+        .login-container {
+            max-width: 360px;
+            margin: 120px auto;
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2933;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #4a5568;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2ca01c;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #279219;
+        }
+
+        .error {
+            margin-top: 12px;
+            color: #e53e3e;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="title">Catalog Manager Login</div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input id="username" type="text" autocomplete="username">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" autocomplete="current-password">
+            </div>
+
+            <button type="submit">Sign In</button>
+
+            <div id="errorBox" class="error">Invalid login</div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById("loginForm");
+        const errorBox = document.getElementById("errorBox");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            errorBox.style.display = "none";
+
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            try {
+                const res = await fetch("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (!data.ok) {
+                    errorBox.textContent = "Invalid username or password";
+                    errorBox.style.display = "block";
+                    return;
+                }
+
+                sessionStorage.setItem("token", data.token);
+                window.location.href = "module2.html";
+
+            } catch (err) {
+                errorBox.textContent = "Cannot reach server";
+                errorBox.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
